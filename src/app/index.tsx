@@ -1,0 +1,96 @@
+import {
+  createStaticNavigation,
+  DarkTheme,
+  DefaultTheme,
+} from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import {
+  H3,
+  TamaguiProvider,
+  createTamagui,
+  isWeb,
+  useThemeName,
+} from "tamagui";
+import { defaultConfig as defaultTamaguiConfig } from "@tamagui/config/v5";
+import { animations as tamaguiAnimationsCSS } from "@tamagui/config/v5-css";
+import { animations as tamaguiAnimationsReanimated } from "@tamagui/config/v5-reanimated";
+import "@tamagui/native/setup-teleport";
+
+import { Build } from "@buildblazer/core";
+
+import ScreenHome from "@/screens/home";
+import ScreenNewBuild from "@/screens/newBuild";
+import ScreenOpenBuild from "@/screens/openBuild";
+import ScreenBuild from "@/screens/build";
+
+export type NavigationProps = {
+  Home: undefined;
+  NewBuild: undefined;
+  OpenBuild: undefined;
+  Build: {
+    build: Build;
+  };
+};
+const headerRight = () => <H3 padding="$4">Buildblazer</H3>;
+const stack = createNativeStackNavigator<NavigationProps>({
+  initialRouteName: "Home",
+  screens: {
+    Home: {
+      screen: ScreenHome,
+      options: {
+        title: "Buildblazer",
+      },
+    },
+    NewBuild: {
+      screen: ScreenNewBuild,
+      options: {
+        title: "New Build",
+        presentation: "transparentModal",
+        headerShown: false,
+      },
+    },
+    OpenBuild: {
+      screen: ScreenOpenBuild,
+      options: {
+        title: "Open Build",
+        presentation: "transparentModal",
+        headerShown: false,
+      },
+    },
+    Build: {
+      screen: ScreenBuild,
+      options: ({ route }) => {
+        return {
+          title: route.params.build.name,
+          headerRight: headerRight,
+        };
+      },
+    },
+  },
+});
+const Navigation = createStaticNavigation(stack);
+
+const tamaguiConfig = createTamagui({
+  ...defaultTamaguiConfig,
+  animations: isWeb ? tamaguiAnimationsCSS : tamaguiAnimationsReanimated,
+  settings: {
+    ...defaultTamaguiConfig.settings,
+    disableSSR: true,
+    allowedStyleValues: "somewhat-strict",
+    onlyShorthandStyleProps: false,
+    onlyAllowShorthands: false,
+  },
+});
+
+function ReactNavigation() {
+  const theme = useThemeName();
+  return <Navigation theme={theme === "dark" ? DarkTheme : DefaultTheme} />;
+}
+
+export default function Index() {
+  return (
+    <TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
+      <ReactNavigation />
+    </TamaguiProvider>
+  );
+}
