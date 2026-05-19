@@ -31,14 +31,14 @@ export type NavigationProps = {
     build: Build;
   };
 };
-const headerRight = () => <H3 padding="$4">Buildblazer</H3>;
+const header = () => <H3 padding="$4">Buildblazer</H3>;
 const stack = createNativeStackNavigator<NavigationProps>({
   initialRouteName: "Home",
   screens: {
     Home: {
       screen: ScreenHome,
       options: {
-        title: "Buildblazer",
+        headerTitle: header,
       },
     },
     NewBuild: {
@@ -62,7 +62,7 @@ const stack = createNativeStackNavigator<NavigationProps>({
       options: ({ route }) => {
         return {
           title: route.params.build.name,
-          headerRight: headerRight,
+          headerRight: header,
         };
       },
     },

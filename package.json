@@ -18,7 +18,7 @@
     "@expo/vector-icons": "^15.1.1",
     "@react-native-async-storage/async-storage": "^3.0.2",
     "@react-native-async-storage/expo-with-async-storage": "^1.0.0",
-    "@react-navigation/bottom-tabs": "^7.15.5",
+    "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/elements": "^2.9.10",
     "@react-navigation/native": "^7.2.4",
     "@react-navigation/native-stack": "^7.15.1",

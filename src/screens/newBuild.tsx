@@ -19,6 +19,7 @@ import ModalScreen from "@/components/ModalScreen";
 import { NavigationProps } from "@/app";
 import { BUILDBLAZER, saveBuild } from "@/storage";
 import { BuildGeneric } from "@buildblazer/system-generic";
+import { uniqueName } from "@/util";
 
 export default function ScreenNewBuild() {
   const systemIDs = Object.keys(BUILDBLAZER.systems);
@@ -29,9 +30,6 @@ export default function ScreenNewBuild() {
   const [fieldSystem, setFieldSystem] = useState(systemIDs[0]);
 
   let problems: ReactElement[] = [];
-  if (fieldName === "") {
-    problems.push(<Text>Name can&apos;t be empty!</Text>);
-  }
 
   return (
     <ModalScreen
@@ -53,7 +51,12 @@ export default function ScreenNewBuild() {
             <Label htmlFor="name" width="$2">
               Name
             </Label>
-            <Input id="name" value={fieldName} onChangeText={setFieldName} />
+            <Input
+              id="name"
+              value={fieldName}
+              onChangeText={setFieldName}
+              placeholder="New Build"
+            />
           </XStack>
           <XStack gap="$8">
             <Label htmlFor="system" width="$2">

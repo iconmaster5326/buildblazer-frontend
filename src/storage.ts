@@ -2,6 +2,7 @@ import { createAsyncStorage } from "@react-native-async-storage/async-storage";
 
 import { Build, Buildblazer } from "@buildblazer/core";
 import { BuildGeneric } from "@buildblazer/system-generic";
+import { uniqueName } from "./util";
 
 export const BUILDBLAZER = new Buildblazer({
   systems: [BuildGeneric.SYSTEM],
@@ -34,9 +35,10 @@ export async function loadBuild(id: string): Promise<Build> {
 }
 
 export async function saveBuild(build: Build): Promise<void> {
+  const builds = await loadBuildList();
+
   await STORAGE.setItem(`build_${build.id}`, JSON.stringify(build.toJSON()));
 
-  const builds = await loadBuildList();
   const index = builds.findIndex((summary) => summary.id === build.id);
   if (index === -1) {
     builds.push({
