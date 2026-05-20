@@ -22,6 +22,7 @@ import ScreenHome from "@/screens/home";
 import ScreenNewBuild from "@/screens/newBuild";
 import ScreenOpenBuild from "@/screens/openBuild";
 import ScreenBuild from "@/screens/build";
+import ScreenMilestone from "@/screens/milestone";
 
 export type NavigationProps = {
   Home: undefined;
@@ -29,6 +30,11 @@ export type NavigationProps = {
   OpenBuild: undefined;
   Build: {
     build: Build;
+  };
+  Milestone: {
+    build: Build;
+    index: number;
+    onNameChanged?: (value: string) => void;
   };
 };
 const header = () => <H3 padding="$4">Buildblazer</H3>;
@@ -62,6 +68,15 @@ const stack = createNativeStackNavigator<NavigationProps>({
       options: ({ route }) => {
         return {
           title: route.params.build.name,
+          headerRight: header,
+        };
+      },
+    },
+    Milestone: {
+      screen: ScreenMilestone,
+      options: ({ route }) => {
+        return {
+          title: `${route.params.build.name} / ${route.params.build.milestones[route.params.index].name}`,
           headerRight: header,
         };
       },

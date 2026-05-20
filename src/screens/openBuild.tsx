@@ -5,7 +5,6 @@ import {
   Em,
   Form,
   ListItem,
-  Separator,
   Strong,
   Text,
   View,
@@ -19,6 +18,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ModalScreen from "@/components/ModalScreen";
 import { NavigationProps } from "@/app";
 import { BuildSummary, deleteBuild, loadBuild, loadBuildList } from "@/storage";
+import ReminderText from "@/components/ReminderText";
 
 export default function ScreenNewBuild() {
   const [buildList, setBuildList] = useState([] as BuildSummary[]);
@@ -56,10 +56,10 @@ export default function ScreenNewBuild() {
           </XStack>
           <View>
             {buildList.length === 0 ? (
-              <Text padding="$4" textAlign="center" fontStyle="italic">
+              <ReminderText padding="$4">
                 You don&apos;t have any builds. Make one by pressing &quot;New
                 Build&quot;!
-              </Text>
+              </ReminderText>
             ) : (
               <ContextMenu>
                 <ContextMenu.Trigger asChild>
