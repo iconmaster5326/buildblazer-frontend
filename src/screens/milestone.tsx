@@ -35,6 +35,10 @@ export default function ScreenMilestone({
 
   const [name, setName] = useState(milestone.name);
 
+  function pickEntityType() {
+    nav.navigate("PickEntityType", { build: build });
+  }
+
   return (
     <Screen>
       <YStack flex={1} alignSelf="stretch" gap="$4" padding="$4">
@@ -71,7 +75,11 @@ export default function ScreenMilestone({
             ))}
           </YGroup>
         )}
-        {media.md ? <Button>Add Trait</Button> : <PlusButton />}
+        {media.md ? (
+          <Button onPress={pickEntityType}>Add Trait</Button>
+        ) : (
+          <PlusButton onPress={pickEntityType} />
+        )}
       </YStack>
     </Screen>
   );

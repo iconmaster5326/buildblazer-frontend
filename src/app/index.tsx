@@ -23,6 +23,7 @@ import ScreenNewBuild from "@/screens/newBuild";
 import ScreenOpenBuild from "@/screens/openBuild";
 import ScreenBuild from "@/screens/build";
 import ScreenMilestone from "@/screens/milestone";
+import ScreenPickEntityType from "@/screens/pickEntityType";
 
 export type NavigationProps = {
   Home: undefined;
@@ -35,6 +36,9 @@ export type NavigationProps = {
     build: Build;
     index: number;
     onNameChanged?: (value: string) => void;
+  };
+  PickEntityType: {
+    build: Build;
   };
 };
 const header = () => <H3 padding="$4">Buildblazer</H3>;
@@ -79,6 +83,14 @@ const stack = createNativeStackNavigator<NavigationProps>({
           title: `${route.params.build.name} / ${route.params.build.milestones[route.params.index].name}`,
           headerRight: header,
         };
+      },
+    },
+    PickEntityType: {
+      screen: ScreenPickEntityType,
+      options: {
+        title: "New Trait",
+        presentation: "transparentModal",
+        headerShown: false,
       },
     },
   },
