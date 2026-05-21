@@ -13,7 +13,9 @@ import {
   Tabs,
   Text,
   useMedia,
+  useTheme,
   View,
+  VisuallyHidden,
   XStack,
   YGroup,
   YStack,
@@ -30,10 +32,6 @@ import { NavigationProps } from "@/app";
 import { uniqueName } from "@/util";
 import PlusButton from "@/components/PlusButton";
 import ReminderText from "@/components/ReminderText";
-
-const HeaderText = styled(H4, {
-  textDecorationLine: "underline",
-});
 
 export default function ScreenBuild({
   route,
@@ -86,6 +84,16 @@ export default function ScreenBuild({
     );
   }
 
+  const BBYGroup = styled(YGroup, {
+    borderWidth: "$1",
+    borderRadius: "$2",
+    borderColor: "$borderColor",
+  });
+  const BBYGroupSeparator = styled(Separator, {
+    borderWidth: "$0.5",
+    borderColor: "$borderColor",
+  });
+
   function MilestonesTab({ build }: { build: Build }) {
     const media = useMedia();
     const [rClicked, setRClicked] = useState(
@@ -117,22 +125,29 @@ export default function ScreenBuild({
         ) : (
           <ContextMenu>
             <ContextMenu.Trigger asChild>
-              <YGroup>
+              <BBYGroup
+                borderWidth="$1"
+                borderRadius="$2"
+                borderColor="$borderColor"
+              >
                 {milestones.map((milestone, index) => (
-                  <YGroup.Item
-                    key={index}
-                    onContextMenu={() => setRClicked(milestone)}
-                  >
-                    <ListItem
-                      onPress={async () => {
-                        navToMilestone(index);
-                      }}
+                  <>
+                    {index === 0 ? null : <BBYGroupSeparator />}
+                    <YGroup.Item
+                      key={index}
+                      onContextMenu={() => setRClicked(milestone)}
                     >
-                      {milestone.name}
-                    </ListItem>
-                  </YGroup.Item>
+                      <ListItem
+                        onPress={async () => {
+                          navToMilestone(index);
+                        }}
+                      >
+                        {milestone.name}
+                      </ListItem>
+                    </YGroup.Item>
+                  </>
                 ))}
-              </YGroup>
+              </BBYGroup>
             </ContextMenu.Trigger>
             <ContextMenu.Portal zIndex={100}>
               <ContextMenu.Content>
@@ -199,16 +214,19 @@ export default function ScreenBuild({
         ) : (
           <ContextMenu>
             <ContextMenu.Trigger asChild>
-              <YGroup>
+              <BBYGroup>
                 {sheets.map((sheet, index) => (
-                  <YGroup.Item
-                    key={index}
-                    onContextMenu={() => setRClicked(sheet)}
-                  >
-                    <ListItem>{sheet.name}</ListItem>
-                  </YGroup.Item>
+                  <>
+                    {index === 0 ? null : <BBYGroupSeparator />}
+                    <YGroup.Item
+                      key={index}
+                      onContextMenu={() => setRClicked(sheet)}
+                    >
+                      <ListItem>{sheet.name}</ListItem>
+                    </YGroup.Item>
+                  </>
                 ))}
-              </YGroup>
+              </BBYGroup>
             </ContextMenu.Trigger>
             <ContextMenu.Portal zIndex={100}>
               <ContextMenu.Content>
@@ -242,6 +260,12 @@ export default function ScreenBuild({
     );
   }
 
+  const theme = useTheme();
+  const BBTabIcon = styled(Icon, {
+    size: 20,
+    color: theme.color?.get(),
+  });
+
   const tabStyle = {
     activeStyle: {
       backgroundColor: "$color3",
@@ -251,7 +275,23 @@ export default function ScreenBuild({
     borderWidth: "$0.25",
     borderColor: "$borderColor",
     borderRadius: 0,
+    gap: "$1.5",
   };
+  const BBTab = styled(Tabs.Tab, tabStyle);
+
+  const BBTabLabel = styled(VisuallyHidden, {
+    visible: media.xs,
+  });
+
+  function Header(props: { children: any; icon: string }) {
+    return (
+      <XStack asChild gap="$2">
+        <H4 textDecorationLine="underline">
+          <BBTabIcon size={26} name={props.icon as any} /> {props.children}
+        </H4>
+      </XStack>
+    );
+  }
 
   return (
     <Screen>
@@ -262,12 +302,12 @@ export default function ScreenBuild({
           </YStack>
           <Separator alignSelf="stretch" vertical />
           <YStack flex={1} gap="$4">
-            <HeaderText>Milestones</HeaderText>
+            <Header icon="stairs">Milestones</Header>
             <MilestonesTab build={build} />
           </YStack>
           <Separator alignSelf="stretch" vertical />
           <YStack flex={1} gap="$4">
-            <HeaderText>Sheets</HeaderText>
+            <Header icon="file-document">Sheets</Header>
             <SheetsTab build={build} />
           </YStack>
         </XStack>
@@ -279,19 +319,20 @@ export default function ScreenBuild({
             backgroundColor="$color1"
           >
             <Tabs.List>
-              <Tabs.Tab {...tabStyle} value="info">
-                <Text>Info</Text>
-              </Tabs.Tab>
-              <Tabs.Tab {...tabStyle} value="milestones">
-                <Text>Milestones</Text>
-              </Tabs.Tab>
-              <Tabs.Tab {...tabStyle} value="sheets">
-                <Text>Sheets</Text>
-              </Tabs.Tab>
+              <BBTab value="info">
+                <BBTabIcon name="information" />
+                <BBTabLabel>Info</BBTabLabel>
+              </BBTab>
+              <BBTab value="milestones">
+                <BBTabIcon name="stairs" />
+                <BBTabLabel>Milestones</BBTabLabel>
+              </BBTab>
+              <BBTab value="sheets">
+                <BBTabIcon name="file-document" />
+                <BBTabLabel>Sheets</BBTabLabel>
+              </BBTab>
             </Tabs.List>
-            <Button {...tabStyle} iconSize="$8" icon={<Icon name="menu" />}>
-              <Text fontSize="$6">Settings</Text>
-            </Button>
+            <Button {...tabStyle} iconSize="$8" icon={<Icon name="menu" />} />
           </XStack>
           <View padding="$4">
             <Tabs.Content value="info">

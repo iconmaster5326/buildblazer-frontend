@@ -6,7 +6,6 @@ import {
   Input,
   Label,
   Select,
-  Text,
   VisuallyHidden,
   XStack,
   YStack,
@@ -19,7 +18,6 @@ import ModalScreen from "@/components/ModalScreen";
 import { NavigationProps } from "@/app";
 import { BUILDBLAZER, saveBuild } from "@/storage";
 import { BuildGeneric } from "@buildblazer/system-generic";
-import { uniqueName } from "@/util";
 
 export default function ScreenNewBuild() {
   const systemIDs = Object.keys(BUILDBLAZER.systems);
