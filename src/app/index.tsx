@@ -15,8 +15,9 @@ import { defaultConfig as defaultTamaguiConfig } from "@tamagui/config/v5";
 import { animations as tamaguiAnimationsCSS } from "@tamagui/config/v5-css";
 import { animations as tamaguiAnimationsReanimated } from "@tamagui/config/v5-reanimated";
 import "@tamagui/native/setup-teleport";
+import { immerable } from "immer";
 
-import { Build } from "@buildblazer/core";
+import { Build, Change, Entity, Milestone, Sheet } from "@buildblazer/core";
 
 import ScreenHome from "@/screens/home";
 import ScreenNewBuild from "@/screens/newBuild";
@@ -24,7 +25,16 @@ import ScreenOpenBuild from "@/screens/openBuild";
 import ScreenBuild from "@/screens/build";
 import ScreenMilestone from "@/screens/milestone";
 import ScreenPickEntityType from "@/screens/pickEntityType";
+import { ReduxProvider } from "@/redux";
 
+// set up Immer
+(Build as any)[immerable] = true;
+(Change as any)[immerable] = true;
+(Entity as any)[immerable] = true;
+(Milestone as any)[immerable] = true;
+(Sheet as any)[immerable] = true;
+
+// set up React Navigation
 export type NavigationProps = {
   Home: undefined;
   NewBuild: undefined;
@@ -97,6 +107,12 @@ const stack = createNativeStackNavigator<NavigationProps>({
 });
 const Navigation = createStaticNavigation(stack);
 
+function ReactNavigation() {
+  const theme = useThemeName();
+  return <Navigation theme={theme === "dark" ? DarkTheme : DefaultTheme} />;
+}
+
+// Set up tamagui
 const tamaguiConfig = createTamagui({
   ...defaultTamaguiConfig,
   animations: isWeb ? tamaguiAnimationsCSS : tamaguiAnimationsReanimated,
@@ -109,15 +125,13 @@ const tamaguiConfig = createTamagui({
   },
 });
 
-function ReactNavigation() {
-  const theme = useThemeName();
-  return <Navigation theme={theme === "dark" ? DarkTheme : DefaultTheme} />;
-}
-
+// Return the core component of our app
 export default function Index() {
   return (
-    <TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
-      <ReactNavigation />
-    </TamaguiProvider>
+    <ReduxProvider>
+      <TamaguiProvider config={tamaguiConfig} defaultTheme="dark">
+        <ReactNavigation />
+      </TamaguiProvider>
+    </ReduxProvider>
   );
 }

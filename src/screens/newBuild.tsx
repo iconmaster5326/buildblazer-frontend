@@ -16,8 +16,8 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 
 import ModalScreen from "@/components/ModalScreen";
 import { NavigationProps } from "@/app";
-import { BUILDBLAZER, saveBuild } from "@/storage";
-import { BuildGeneric } from "@buildblazer/system-generic";
+import { BUILDBLAZER, loadBuild } from "@/storage";
+import { REDUX_DISPATCH, useReduxDispatch } from "@/redux";
 
 export default function ScreenNewBuild() {
   const systemIDs = Object.keys(BUILDBLAZER.systems);
@@ -26,6 +26,7 @@ export default function ScreenNewBuild() {
   const [success, setSuccess] = useState(false);
   const [fieldName, setFieldName] = useState("");
   const [fieldSystem, setFieldSystem] = useState(systemIDs[0]);
+  const dispatch = useReduxDispatch();
 
   let problems: ReactElement[] = [];
 
@@ -35,11 +36,16 @@ export default function ScreenNewBuild() {
       onDismiss={async () => {
         nav.goBack();
         if (success) {
-          const build = new BuildGeneric({
-            name: fieldName,
+          nav.navigate("Build", {
+            build: await loadBuild(
+              await dispatch(
+                REDUX_DISPATCH.newBuild({
+                  name: fieldName,
+                  system: fieldSystem,
+                }),
+              ).unwrap(),
+            ),
           });
-          await saveBuild(build);
-          nav.navigate("Build", { build: build });
         }
       }}
     >

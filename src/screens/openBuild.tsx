@@ -12,30 +12,31 @@ import {
   YGroup,
   YStack,
 } from "tamagui";
-import { useEffect, useReducer, useState } from "react";
+import { useState } from "react";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import ModalScreen from "@/components/ModalScreen";
 import { NavigationProps } from "@/app";
-import { BuildSummary, deleteBuild, loadBuild, loadBuildList } from "@/storage";
+import { BuildSummary, loadBuild } from "@/storage";
 import ReminderText from "@/components/ReminderText";
+import {
+  REDUX_DISPATCH,
+  REDUX_SELECTOR,
+  useReduxDispatch,
+  useReduxSelector,
+} from "@/redux";
 
 export default function ScreenNewBuild() {
-  const [buildList, setBuildList] = useState([] as BuildSummary[]);
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
+  const dispatch = useReduxDispatch();
+  const buildList = useReduxSelector(REDUX_SELECTOR.builds);
+
   const [buildChosen, setBuildChosen] = useState(
     undefined as BuildSummary | undefined,
   );
   const [buildRClicked, setBuildRClicked] = useState(
     undefined as BuildSummary | undefined,
   );
-  const [update, forceUpdate] = useReducer((x) => x + 1, 0);
-
-  useEffect(() => {
-    (async () => {
-      setBuildList(await loadBuildList());
-    })();
-  }, [update]);
 
   return (
     <ModalScreen
@@ -98,8 +99,9 @@ export default function ScreenNewBuild() {
                       theme="red"
                       onPress={async () => {
                         if (!buildRClicked) return;
-                        await deleteBuild(buildRClicked.id);
-                        forceUpdate();
+                        await dispatch(
+                          REDUX_DISPATCH.deleteBuild(buildRClicked.id),
+                        );
                       }}
                     >
                       <ContextMenu.ItemTitle>
