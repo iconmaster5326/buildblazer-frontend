@@ -15,29 +15,33 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import Screen from "@/components/Screen";
 import { NavigationProps } from "@/app";
-import { useState } from "react";
-import { saveBuild } from "@/storage";
 import ReminderText from "@/components/ReminderText";
 import PlusButton from "@/components/PlusButton";
-import { REDUX_SELECTOR, useReduxSelector } from "@/redux";
+import {
+  REDUX_DISPATCH,
+  REDUX_SELECTOR,
+  useReduxDispatch,
+  useReduxSelector,
+} from "@/redux";
 
 export default function ScreenMilestone({
   route,
 }: {
   route: RouteProp<NavigationProps, "Milestone">;
 }) {
-  const build = useReduxSelector(REDUX_SELECTOR.build);
   const index = route.params.index;
-  const milestone = build.milestones[index];
-  const entity = build.entityAfterMilestone(milestone);
 
+  const build = useReduxSelector(REDUX_SELECTOR.build);
+  const milestone = useReduxSelector(REDUX_SELECTOR.milestones)[index];
   const media = useMedia();
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
+  const name = useReduxSelector((state) => state.build.milestones[index].name);
+  const dispatch = useReduxDispatch();
 
-  const [name, setName] = useState(milestone.name);
+  const entity = build.entityAfterMilestone(milestone);
 
   function pickEntityType() {
-    nav.navigate("PickEntityType", { build: build });
+    nav.navigate("PickEntityType");
   }
 
   return (
@@ -52,12 +56,10 @@ export default function ScreenMilestone({
             id="name"
             value={name}
             onChangeText={async (v) => {
-              milestone.name = v;
-              setName(v);
-              if (route.params.onNameChanged)
-                await route.params.onNameChanged(v);
+              await dispatch(
+                REDUX_DISPATCH.milestoneName({ index: index, value: v }),
+              );
               nav.setOptions({});
-              await saveBuild(build);
             }}
           />
         </XStack>

@@ -16,7 +16,7 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 
 import ModalScreen from "@/components/ModalScreen";
 import { NavigationProps } from "@/app";
-import { BUILDBLAZER, loadBuild } from "@/storage";
+import { BUILDBLAZER } from "@/storage";
 import { REDUX_DISPATCH, useReduxDispatch } from "@/redux";
 
 export default function ScreenNewBuild() {
@@ -36,18 +36,13 @@ export default function ScreenNewBuild() {
       onDismiss={async () => {
         nav.goBack();
         if (success) {
-          nav.navigate("Build", {
-            build: (
-              await loadBuild(
-                await dispatch(
-                  REDUX_DISPATCH.newBuild({
-                    name: fieldName,
-                    system: fieldSystem,
-                  }),
-                ).unwrap(),
-              )
-            ).id,
-          });
+          await dispatch(
+            REDUX_DISPATCH.newBuild({
+              name: fieldName,
+              system: fieldSystem,
+            }),
+          );
+          nav.navigate("Build");
         }
       }}
     >

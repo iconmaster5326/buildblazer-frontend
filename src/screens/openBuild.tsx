@@ -45,7 +45,7 @@ export default function ScreenNewBuild() {
         nav.goBack();
         if (buildChosen) {
           await dispatch(REDUX_DISPATCH.loadBuild(buildChosen.id));
-          nav.navigate("Build", { build: buildChosen.id });
+          nav.navigate("Build");
         }
       }}
     >

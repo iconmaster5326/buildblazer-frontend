@@ -70,7 +70,6 @@ export default function ScreenPickEntityType({
 }: {
   route: RouteProp<NavigationProps, "PickEntityType">;
 }) {
-  const build = route.params.build;
   const entityTypes = Object.keys(BUILDBLAZER.entityTypes).toSorted();
 
   const media = useMedia();

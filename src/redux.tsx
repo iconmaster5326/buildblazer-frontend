@@ -32,6 +32,17 @@ const reducers = {
   sheets: (state: ReduxState, { payload }: PayloadAction<Sheet[]>) => {
     state.build.sheets = payload;
   },
+  milestoneName: (
+    state: ReduxState,
+    {
+      payload: { index, value },
+    }: PayloadAction<{
+      index: number;
+      value: string;
+    }>,
+  ) => {
+    state.build.milestones[index].name = value;
+  },
 };
 
 const thunk = createAsyncThunk.withTypes<{
@@ -54,13 +65,13 @@ const thunks = {
     async (
       args: { name: string; system: string },
       thunkAPI,
-    ): Promise<string> => {
+    ): Promise<Build> => {
       const build = new BuildGeneric({
         name: args.name,
       });
       await saveBuild(build);
       await thunkAPI.dispatch(REDUX_DISPATCH.loadBuilds());
-      return build.id;
+      return build;
     },
   ),
   loadBuild: thunk(`${STORE_PREFIX}/loadBuild`, loadBuild),
@@ -92,7 +103,11 @@ export const REDUX_SLICE = createSlice({
         },
       })
       .addAsyncThunk(thunks.deleteBuild, {})
-      .addAsyncThunk(thunks.newBuild, {})
+      .addAsyncThunk(thunks.newBuild, {
+        fulfilled: (state, { payload }) => {
+          state.build = payload;
+        },
+      })
       .addAsyncThunk(thunks.loadBuild, {
         fulfilled: (state, { payload }) => {
           state.build = payload;

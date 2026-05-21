@@ -17,8 +17,6 @@ import { animations as tamaguiAnimationsReanimated } from "@tamagui/config/v5-re
 import "@tamagui/native/setup-teleport";
 import { immerable } from "immer";
 
-import { Build } from "@buildblazer/core";
-
 import ScreenHome from "@/screens/home";
 import ScreenNewBuild from "@/screens/newBuild";
 import ScreenOpenBuild from "@/screens/openBuild";
@@ -26,11 +24,11 @@ import ScreenBuild from "@/screens/build";
 import ScreenMilestone from "@/screens/milestone";
 import ScreenPickEntityType from "@/screens/pickEntityType";
 import { REDUX_STORE, ReduxProvider } from "@/redux";
+import { saveBuild } from "@/storage";
 
 // set up Immer
 import * as bb from "@buildblazer/core";
 import * as sysGeneric from "@buildblazer/system-generic";
-import { saveBuild } from "@/storage";
 
 for (const module of [bb, sysGeneric]) {
   for (const clazz of Object.values(module)) {
@@ -45,16 +43,11 @@ export type NavigationProps = {
   Home: undefined;
   NewBuild: undefined;
   OpenBuild: undefined;
-  Build: {
-    build: string;
-  };
+  Build: undefined;
   Milestone: {
     index: number;
-    onNameChanged?: (value: string) => void;
   };
-  PickEntityType: {
-    build: Build;
-  };
+  PickEntityType: undefined;
 };
 
 const header = () => <H3 padding="$4">Buildblazer</H3>;

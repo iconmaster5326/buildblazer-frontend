@@ -24,9 +24,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 
-import { Build, Milestone, Sheet } from "@buildblazer/core";
+import { Milestone, Sheet } from "@buildblazer/core";
 
-import { saveBuild } from "@/storage";
 import { NavigationProps } from "@/app";
 import { uniqueName } from "@/util";
 import PlusButton from "@/components/PlusButton";
