@@ -44,7 +44,8 @@ export default function ScreenNewBuild() {
       onDismiss={async () => {
         nav.goBack();
         if (buildChosen) {
-          nav.navigate("Build", { build: await loadBuild(buildChosen.id) });
+          await dispatch(REDUX_DISPATCH.loadBuild(buildChosen.id));
+          nav.navigate("Build", { build: buildChosen.id });
         }
       }}
     >

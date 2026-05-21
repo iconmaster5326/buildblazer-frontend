@@ -37,14 +37,16 @@ export default function ScreenNewBuild() {
         nav.goBack();
         if (success) {
           nav.navigate("Build", {
-            build: await loadBuild(
-              await dispatch(
-                REDUX_DISPATCH.newBuild({
-                  name: fieldName,
-                  system: fieldSystem,
-                }),
-              ).unwrap(),
-            ),
+            build: (
+              await loadBuild(
+                await dispatch(
+                  REDUX_DISPATCH.newBuild({
+                    name: fieldName,
+                    system: fieldSystem,
+                  }),
+                ).unwrap(),
+              )
+            ).id,
           });
         }
       }}

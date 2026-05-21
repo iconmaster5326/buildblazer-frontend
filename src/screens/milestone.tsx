@@ -19,13 +19,14 @@ import { useState } from "react";
 import { saveBuild } from "@/storage";
 import ReminderText from "@/components/ReminderText";
 import PlusButton from "@/components/PlusButton";
+import { REDUX_SELECTOR, useReduxSelector } from "@/redux";
 
 export default function ScreenMilestone({
   route,
 }: {
   route: RouteProp<NavigationProps, "Milestone">;
 }) {
-  const build = route.params.build;
+  const build = useReduxSelector(REDUX_SELECTOR.build);
   const index = route.params.index;
   const milestone = build.milestones[index];
   const entity = build.entityAfterMilestone(milestone);

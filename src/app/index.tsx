@@ -17,7 +17,7 @@ import { animations as tamaguiAnimationsReanimated } from "@tamagui/config/v5-re
 import "@tamagui/native/setup-teleport";
 import { immerable } from "immer";
 
-import { Build, Change, Entity, Milestone, Sheet } from "@buildblazer/core";
+import { Build } from "@buildblazer/core";
 
 import ScreenHome from "@/screens/home";
 import ScreenNewBuild from "@/screens/newBuild";
@@ -25,14 +25,20 @@ import ScreenOpenBuild from "@/screens/openBuild";
 import ScreenBuild from "@/screens/build";
 import ScreenMilestone from "@/screens/milestone";
 import ScreenPickEntityType from "@/screens/pickEntityType";
-import { ReduxProvider } from "@/redux";
+import { REDUX_STORE, ReduxProvider } from "@/redux";
 
 // set up Immer
-(Build as any)[immerable] = true;
-(Change as any)[immerable] = true;
-(Entity as any)[immerable] = true;
-(Milestone as any)[immerable] = true;
-(Sheet as any)[immerable] = true;
+import * as bb from "@buildblazer/core";
+import * as sysGeneric from "@buildblazer/system-generic";
+import { saveBuild } from "@/storage";
+
+for (const module of [bb, sysGeneric]) {
+  for (const clazz of Object.values(module)) {
+    if (typeof clazz === "function") {
+      (clazz as any)[immerable] = true;
+    }
+  }
+}
 
 // set up React Navigation
 export type NavigationProps = {
@@ -40,10 +46,9 @@ export type NavigationProps = {
   NewBuild: undefined;
   OpenBuild: undefined;
   Build: {
-    build: Build;
+    build: string;
   };
   Milestone: {
-    build: Build;
     index: number;
     onNameChanged?: (value: string) => void;
   };
@@ -51,7 +56,9 @@ export type NavigationProps = {
     build: Build;
   };
 };
+
 const header = () => <H3 padding="$4">Buildblazer</H3>;
+
 const stack = createNativeStackNavigator<NavigationProps>({
   initialRouteName: "Home",
   screens: {
@@ -81,7 +88,7 @@ const stack = createNativeStackNavigator<NavigationProps>({
       screen: ScreenBuild,
       options: ({ route }) => {
         return {
-          title: route.params.build.name,
+          title: REDUX_STORE.getState().build.name,
           headerRight: header,
         };
       },
@@ -90,7 +97,7 @@ const stack = createNativeStackNavigator<NavigationProps>({
       screen: ScreenMilestone,
       options: ({ route }) => {
         return {
-          title: `${route.params.build.name} / ${route.params.build.milestones[route.params.index].name}`,
+          title: `${REDUX_STORE.getState().build.name} / ${REDUX_STORE.getState().build.milestones[route.params.index].name}`,
           headerRight: header,
         };
       },
@@ -105,10 +112,11 @@ const stack = createNativeStackNavigator<NavigationProps>({
     },
   },
 });
-const Navigation = createStaticNavigation(stack);
 
 function ReactNavigation() {
   const theme = useThemeName();
+
+  const Navigation = createStaticNavigation(stack);
   return <Navigation theme={theme === "dark" ? DarkTheme : DefaultTheme} />;
 }
 
@@ -123,6 +131,26 @@ const tamaguiConfig = createTamagui({
     onlyShorthandStyleProps: false,
     onlyAllowShorthands: false,
   },
+});
+
+// Set up the autosave timer
+const AUTOSAVE_INTERVAL = 1000;
+let lastAutosave = Date.now();
+let autosaveInProgress = false;
+
+REDUX_STORE.subscribe(() => {
+  const now = Date.now();
+  if (!autosaveInProgress && now - lastAutosave >= AUTOSAVE_INTERVAL) {
+    autosaveInProgress = true;
+    requestIdleCallback(async () => {
+      const state = REDUX_STORE.getState();
+      if (state.build) {
+        await saveBuild(state.build);
+        lastAutosave = now;
+        autosaveInProgress = false;
+      }
+    });
+  }
 });
 
 // Return the core component of our app

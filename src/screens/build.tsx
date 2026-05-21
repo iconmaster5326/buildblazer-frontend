@@ -11,7 +11,6 @@ import {
   Strong,
   styled,
   Tabs,
-  Text,
   useMedia,
   useTheme,
   View,
@@ -32,234 +31,230 @@ import { NavigationProps } from "@/app";
 import { uniqueName } from "@/util";
 import PlusButton from "@/components/PlusButton";
 import ReminderText from "@/components/ReminderText";
+import {
+  REDUX_DISPATCH,
+  REDUX_SELECTOR,
+  useReduxDispatch,
+  useReduxSelector,
+} from "@/redux";
+import { useDispatch } from "react-redux";
+
+function InfoTab() {
+  const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
+  const dispatch = useReduxDispatch();
+  const name = useReduxSelector(REDUX_SELECTOR.buildName);
+
+  return (
+    <YStack gap="$4">
+      <XStack gap="$4">
+        <Label htmlFor="name">
+          <H5>Name</H5>
+        </Label>
+        <Input
+          flex={1}
+          id="name"
+          value={name}
+          placeholder="New Build"
+          onChangeText={async (v) => {
+            await dispatch(REDUX_DISPATCH.buildName(v)).unwrap();
+            nav.setOptions({});
+          }}
+        />
+      </XStack>
+    </YStack>
+  );
+}
+
+const BBYGroup = styled(YGroup, {
+  borderWidth: "$1",
+  borderRadius: "$2",
+  borderColor: "$borderColor",
+});
+const BBYGroupSeparator = styled(Separator, {
+  borderWidth: "$0.5",
+  borderColor: "$borderColor",
+});
+
+function MilestonesTab() {
+  const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
+  const milestones = useReduxSelector(REDUX_SELECTOR.milestones);
+  const dispatch = useDispatch();
+  const media = useMedia();
+  const [rClicked, setRClicked] = useState(undefined as Milestone | undefined);
+
+  function navToMilestone(index: number) {
+    nav.navigate("Milestone", {
+      index: index,
+    });
+  }
+
+  async function addMilestone() {
+    await dispatch(
+      REDUX_DISPATCH.milestones([
+        ...milestones,
+        new Milestone({
+          name: uniqueName(
+            milestones.map((m) => m.name),
+            "New Milestone",
+          ),
+        }),
+      ]),
+    );
+    navToMilestone(milestones.length);
+  }
+
+  return (
+    <YStack gap="$4">
+      {milestones.length === 0 ? (
+        <ReminderText>
+          Milestones are checkpoints (such as levels) where a build gains traits
+          or changes its statistics. Press &quot;
+          {media.md ? "Add Milestone" : "+"}&quot; to add a new milestone!
+        </ReminderText>
+      ) : (
+        <ContextMenu>
+          <ContextMenu.Trigger asChild>
+            <BBYGroup>
+              {milestones.map((milestone, index) => (
+                <>
+                  {index === 0 ? null : <BBYGroupSeparator />}
+                  <YGroup.Item
+                    key={index}
+                    onContextMenu={() => setRClicked(milestone)}
+                  >
+                    <ListItem
+                      onPress={async () => {
+                        navToMilestone(index);
+                      }}
+                    >
+                      {milestone.name}
+                    </ListItem>
+                  </YGroup.Item>
+                </>
+              ))}
+            </BBYGroup>
+          </ContextMenu.Trigger>
+          <ContextMenu.Portal zIndex={100}>
+            <ContextMenu.Content>
+              <ContextMenu.Item
+                theme="red"
+                onPress={async () => {
+                  if (!rClicked) return;
+                  const index = milestones.indexOf(rClicked);
+                  if (index === -1) return;
+                  await dispatch(
+                    REDUX_DISPATCH.milestones(milestones.toSpliced(index, 1)),
+                  );
+                }}
+              >
+                <ContextMenu.ItemTitle>
+                  <Strong>Delete</Strong>
+                </ContextMenu.ItemTitle>
+              </ContextMenu.Item>
+            </ContextMenu.Content>
+          </ContextMenu.Portal>
+        </ContextMenu>
+      )}
+      {media.md ? (
+        <Button onPress={addMilestone}>Add Milestone</Button>
+      ) : (
+        <PlusButton onPress={addMilestone} />
+      )}
+    </YStack>
+  );
+}
+
+function SheetsTab() {
+  const media = useMedia();
+  const milestones = useReduxSelector(REDUX_SELECTOR.milestones);
+  const [rClicked, setRClicked] = useState(undefined as Sheet | undefined);
+  const sheets = useReduxSelector(REDUX_SELECTOR.sheets);
+  const dispatch = useDispatch();
+
+  async function addSheet() {
+    await dispatch(
+      REDUX_DISPATCH.sheets([
+        ...sheets,
+        new Sheet({
+          name: uniqueName(
+            sheets.map((m) => m.name),
+            "New Sheet",
+          ),
+        }),
+      ]),
+    );
+  }
+
+  return (
+    <YStack gap="$4">
+      {sheets.length === 0 ? (
+        <ReminderText>
+          Sheets are instances of your character at a certain milestone, where
+          you can track their state and roll using thier statistics.&nbsp;
+          {milestones.length !== 0 ? (
+            <>
+              Press &quot;{media.md ? "Add Sheet" : "+"}&quot; to add a new
+              sheet!
+            </>
+          ) : (
+            <>Make a milestone to make a sheet for it!</>
+          )}
+        </ReminderText>
+      ) : (
+        <ContextMenu>
+          <ContextMenu.Trigger asChild>
+            <BBYGroup>
+              {sheets.map((sheet, index) => (
+                <>
+                  {index === 0 ? null : <BBYGroupSeparator />}
+                  <YGroup.Item
+                    key={index}
+                    onContextMenu={() => setRClicked(sheet)}
+                  >
+                    <ListItem>{sheet.name}</ListItem>
+                  </YGroup.Item>
+                </>
+              ))}
+            </BBYGroup>
+          </ContextMenu.Trigger>
+          <ContextMenu.Portal zIndex={100}>
+            <ContextMenu.Content>
+              <ContextMenu.Item
+                theme="red"
+                onPress={async () => {
+                  if (!rClicked) return;
+                  const index = sheets.indexOf(rClicked);
+                  if (index === -1) return;
+                  await dispatch(
+                    REDUX_DISPATCH.sheets(sheets.toSpliced(index, 1)),
+                  );
+                }}
+              >
+                <ContextMenu.ItemTitle>
+                  <Strong>Delete</Strong>
+                </ContextMenu.ItemTitle>
+              </ContextMenu.Item>
+            </ContextMenu.Content>
+          </ContextMenu.Portal>
+        </ContextMenu>
+      )}
+      {media.md ? (
+        <Button disabled={milestones.length === 0} onPress={addSheet}>
+          Add Sheet
+        </Button>
+      ) : (
+        <PlusButton disabled={milestones.length === 0} onPress={addSheet} />
+      )}
+    </YStack>
+  );
+}
 
 export default function ScreenBuild({
   route,
 }: {
   route: RouteProp<NavigationProps, "Build">;
 }) {
-  const build = route.params.build;
   const media = useMedia();
-  const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
-
-  const [sheets, setSheets] = useState(build.sheets);
-  const [milestones, setMilestones] = useState(build.milestones);
-
-  function navToMilestone(index: number) {
-    nav.navigate("Milestone", {
-      build: build,
-      index: build.milestones.length - 1,
-      onNameChanged: async () => {
-        setMilestones([]);
-        setMilestones([...milestones]);
-      },
-    });
-  }
-
-  function InfoTab({ build }: { build: Build }) {
-    const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
-
-    const [name, setName] = useState(build.name);
-
-    return (
-      <YStack gap="$4">
-        <XStack gap="$4">
-          <Label htmlFor="name">
-            <H5>Name</H5>
-          </Label>
-          <Input
-            flex={1}
-            id="name"
-            value={name}
-            placeholder="New Build"
-            onChangeText={async (v) => {
-              build.name = v;
-              setName(v);
-              nav.setOptions({});
-              await saveBuild(build);
-            }}
-          />
-        </XStack>
-      </YStack>
-    );
-  }
-
-  const BBYGroup = styled(YGroup, {
-    borderWidth: "$1",
-    borderRadius: "$2",
-    borderColor: "$borderColor",
-  });
-  const BBYGroupSeparator = styled(Separator, {
-    borderWidth: "$0.5",
-    borderColor: "$borderColor",
-  });
-
-  function MilestonesTab({ build }: { build: Build }) {
-    const media = useMedia();
-    const [rClicked, setRClicked] = useState(
-      undefined as Milestone | undefined,
-    );
-
-    async function addMilestone() {
-      build.milestones.push(
-        new Milestone({
-          name: uniqueName(
-            build.milestones.map((m) => m.name),
-            "New Milestone",
-          ),
-        }),
-      );
-      await saveBuild(build);
-      setMilestones([...build.milestones]);
-      navToMilestone(build.milestones.length - 1);
-    }
-
-    return (
-      <YStack gap="$4">
-        {milestones.length === 0 ? (
-          <ReminderText>
-            Milestones are checkpoints (such as levels) where a build gains
-            traits or changes its statistics. Press &quot;
-            {media.md ? "Add Milestone" : "+"}&quot; to add a new milestone!
-          </ReminderText>
-        ) : (
-          <ContextMenu>
-            <ContextMenu.Trigger asChild>
-              <BBYGroup
-                borderWidth="$1"
-                borderRadius="$2"
-                borderColor="$borderColor"
-              >
-                {milestones.map((milestone, index) => (
-                  <>
-                    {index === 0 ? null : <BBYGroupSeparator />}
-                    <YGroup.Item
-                      key={index}
-                      onContextMenu={() => setRClicked(milestone)}
-                    >
-                      <ListItem
-                        onPress={async () => {
-                          navToMilestone(index);
-                        }}
-                      >
-                        {milestone.name}
-                      </ListItem>
-                    </YGroup.Item>
-                  </>
-                ))}
-              </BBYGroup>
-            </ContextMenu.Trigger>
-            <ContextMenu.Portal zIndex={100}>
-              <ContextMenu.Content>
-                <ContextMenu.Item
-                  theme="red"
-                  onPress={async () => {
-                    if (!rClicked) return;
-                    const index = build.milestones.indexOf(rClicked);
-                    if (index === -1) return;
-                    build.milestones.splice(index, 1);
-                    await saveBuild(build);
-                    setMilestones([...build.milestones]);
-                  }}
-                >
-                  <ContextMenu.ItemTitle>
-                    <Strong>Delete</Strong>
-                  </ContextMenu.ItemTitle>
-                </ContextMenu.Item>
-              </ContextMenu.Content>
-            </ContextMenu.Portal>
-          </ContextMenu>
-        )}
-        {media.md ? (
-          <Button onPress={addMilestone}>Add Milestone</Button>
-        ) : (
-          <PlusButton onPress={addMilestone} />
-        )}
-      </YStack>
-    );
-  }
-
-  function SheetsTab({ build }: { build: Build }) {
-    const media = useMedia();
-    const [rClicked, setRClicked] = useState(undefined as Sheet | undefined);
-
-    async function addSheet() {
-      build.sheets.push(
-        new Sheet({
-          name: uniqueName(
-            build.sheets.map((m) => m.name),
-            "New Sheet",
-          ),
-        }),
-      );
-      await saveBuild(build);
-      setSheets([...build.sheets]);
-    }
-
-    return (
-      <YStack gap="$4">
-        {sheets.length === 0 ? (
-          <ReminderText>
-            Sheets are instances of your character at a certain milestone, where
-            you can track their state and roll using thier statistics.&nbsp;
-            {milestones.length !== 0 ? (
-              <>
-                Press &quot;{media.md ? "Add Sheet" : "+"}&quot; to add a new
-                sheet!
-              </>
-            ) : (
-              <>Make a milestone to make a sheet for it!</>
-            )}
-          </ReminderText>
-        ) : (
-          <ContextMenu>
-            <ContextMenu.Trigger asChild>
-              <BBYGroup>
-                {sheets.map((sheet, index) => (
-                  <>
-                    {index === 0 ? null : <BBYGroupSeparator />}
-                    <YGroup.Item
-                      key={index}
-                      onContextMenu={() => setRClicked(sheet)}
-                    >
-                      <ListItem>{sheet.name}</ListItem>
-                    </YGroup.Item>
-                  </>
-                ))}
-              </BBYGroup>
-            </ContextMenu.Trigger>
-            <ContextMenu.Portal zIndex={100}>
-              <ContextMenu.Content>
-                <ContextMenu.Item
-                  theme="red"
-                  onPress={async () => {
-                    if (!rClicked) return;
-                    const index = build.sheets.indexOf(rClicked);
-                    if (index === -1) return;
-                    build.sheets.splice(index, 1);
-                    await saveBuild(build);
-                    setSheets([...build.sheets]);
-                  }}
-                >
-                  <ContextMenu.ItemTitle>
-                    <Strong>Delete</Strong>
-                  </ContextMenu.ItemTitle>
-                </ContextMenu.Item>
-              </ContextMenu.Content>
-            </ContextMenu.Portal>
-          </ContextMenu>
-        )}
-        {media.md ? (
-          <Button disabled={milestones.length === 0} onPress={addSheet}>
-            Add Sheet
-          </Button>
-        ) : (
-          <PlusButton disabled={milestones.length === 0} onPress={addSheet} />
-        )}
-      </YStack>
-    );
-  }
-
   const theme = useTheme();
   const BBTabIcon = styled(Icon, {
     size: 20,
@@ -298,17 +293,17 @@ export default function ScreenBuild({
       {media.md ? (
         <XStack flex={1} alignItems="flex-start" padding="$4" gap="$4">
           <YStack flex={1} gap="$4">
-            <InfoTab build={build} />
+            <InfoTab />
           </YStack>
           <Separator alignSelf="stretch" vertical />
           <YStack flex={1} gap="$4">
             <Header icon="stairs">Milestones</Header>
-            <MilestonesTab build={build} />
+            <MilestonesTab />
           </YStack>
           <Separator alignSelf="stretch" vertical />
           <YStack flex={1} gap="$4">
             <Header icon="file-document">Sheets</Header>
-            <SheetsTab build={build} />
+            <SheetsTab />
           </YStack>
         </XStack>
       ) : (
@@ -336,13 +331,13 @@ export default function ScreenBuild({
           </XStack>
           <View padding="$4">
             <Tabs.Content value="info">
-              <InfoTab build={build} />
+              <InfoTab />
             </Tabs.Content>
             <Tabs.Content value="milestones">
-              <MilestonesTab build={build} />
+              <MilestonesTab />
             </Tabs.Content>
             <Tabs.Content value="sheets">
-              <SheetsTab build={build} />
+              <SheetsTab />
             </Tabs.Content>
           </View>
         </Tabs>

@@ -1,26 +1,37 @@
 import {
   createSlice,
   configureStore,
-  PayloadAction,
   createAsyncThunk,
+  PayloadAction,
 } from "@reduxjs/toolkit";
 import { Provider, useDispatch, useSelector } from "react-redux";
 
 import { BuildGeneric } from "@buildblazer/system-generic";
 
-import { BuildSummary, deleteBuild, loadBuildList, saveBuild } from "@/storage";
+import {
+  BuildSummary,
+  deleteBuild,
+  loadBuild,
+  loadBuildList,
+  saveBuild,
+} from "@/storage";
+import { Build, Milestone, Sheet } from "@buildblazer/core";
 
 const initState = {
   builds: [] as BuildSummary[],
+  build: undefined as any as Build,
 };
 export type ReduxState = typeof initState;
 
 const STORE_PREFIX = "buildblazer";
 
 const reducers = {
-  // _buildName: (state: ReduxState, { payload }: PayloadAction<string>) => {
-  //   state.build.name = payload;
-  // },
+  milestones: (state: ReduxState, { payload }: PayloadAction<Milestone[]>) => {
+    state.build.milestones = payload;
+  },
+  sheets: (state: ReduxState, { payload }: PayloadAction<Sheet[]>) => {
+    state.build.sheets = payload;
+  },
 };
 
 const thunk = createAsyncThunk.withTypes<{
@@ -52,10 +63,20 @@ const thunks = {
       return build.id;
     },
   ),
+  loadBuild: thunk(`${STORE_PREFIX}/loadBuild`, loadBuild),
+  buildName: thunk(`${STORE_PREFIX}/buildName`, async (_: string, thunkAPI) => {
+    const build = thunkAPI.getState().build;
+    await saveBuild(build);
+    await thunkAPI.dispatch(REDUX_DISPATCH.loadBuilds());
+  }),
 };
 
 const selectors = {
-  builds: (state?: ReduxState) => state?.builds ?? [],
+  builds: (state: ReduxState) => state.builds,
+  build: (state: ReduxState) => state.build,
+  buildName: (state: ReduxState) => state.build.name,
+  milestones: (state: ReduxState) => state.build.milestones,
+  sheets: (state: ReduxState) => state.build.sheets,
 };
 
 export const REDUX_SLICE = createSlice({
@@ -70,11 +91,17 @@ export const REDUX_SLICE = createSlice({
           state.builds = payload;
         },
       })
-      .addAsyncThunk(thunks.deleteBuild, {
-        fulfilled: (state, { payload }) => {},
+      .addAsyncThunk(thunks.deleteBuild, {})
+      .addAsyncThunk(thunks.newBuild, {})
+      .addAsyncThunk(thunks.loadBuild, {
+        fulfilled: (state, { payload }) => {
+          state.build = payload;
+        },
       })
-      .addAsyncThunk(thunks.newBuild, {
-        fulfilled: (state, { payload }) => {},
+      .addAsyncThunk(thunks.buildName, {
+        pending: (state, { meta }) => {
+          state.build.name = meta.arg;
+        },
       }),
 });
 
@@ -84,8 +111,8 @@ export const REDUX_STORE = configureStore({
 });
 
 export const REDUX_DISPATCH = {
-  ...reducers,
   ...thunks,
+  ...REDUX_SLICE.actions,
 };
 export const REDUX_SELECTOR = selectors;
 
