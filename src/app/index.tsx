@@ -43,7 +43,9 @@ export type NavigationProps = {
   Home: undefined;
   NewBuild: undefined;
   OpenBuild: undefined;
-  Build: undefined;
+  Build: {
+    id: string;
+  };
   Milestone: {
     index: number;
   };

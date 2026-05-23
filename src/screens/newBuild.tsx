@@ -36,13 +36,16 @@ export default function ScreenNewBuild() {
       onDismiss={async () => {
         nav.goBack();
         if (success) {
-          await dispatch(
-            REDUX_DISPATCH.newBuild({
-              name: fieldName,
-              system: fieldSystem,
-            }),
-          );
-          nav.navigate("Build");
+          nav.navigate("Build", {
+            id: (
+              await dispatch(
+                REDUX_DISPATCH.newBuild({
+                  name: fieldName,
+                  system: fieldSystem,
+                }),
+              ).unwrap()
+            ).id,
+          });
         }
       }}
     >

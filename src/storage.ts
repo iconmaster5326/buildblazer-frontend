@@ -2,7 +2,6 @@ import { createAsyncStorage } from "@react-native-async-storage/async-storage";
 
 import { Build, Buildblazer } from "@buildblazer/core";
 import { BuildGeneric } from "@buildblazer/system-generic";
-import { uniqueName } from "./util";
 
 export const BUILDBLAZER = new Buildblazer({
   systems: [BuildGeneric.SYSTEM],
