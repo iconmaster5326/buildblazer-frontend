@@ -30,8 +30,7 @@ import { saveBuild } from "@/storage";
 import * as bb from "@buildblazer/core";
 import * as sysGeneric from "@buildblazer/system-generic";
 import ScreenEditEntity from "@/screens/editEntity";
-import { allParamsUp, paramsUp, paramsUpFromRoutes } from "@/util";
-import { ENTITY_TYPE_INFO } from "@/entityTypes";
+import { allParamsUp, paramsUp } from "@/util";
 
 for (const module of [bb, sysGeneric]) {
   for (const clazz of Object.values(module)) {

@@ -1,3 +1,8 @@
+import CounterEditor from "./components/entities/CounterEditor";
+import ModEditor from "./components/entities/ModEditor";
+import StatEditor from "./components/entities/StatEditor";
+import TraitEditor from "./components/entities/TraitEditor";
+
 interface EntityTypeInfo {
   name: string;
   desc: string;
@@ -5,6 +10,7 @@ interface EntityTypeInfo {
     dark: string;
     light: string;
   };
+  editor?: (props: { entityID: string }) => any;
 }
 
 export const ENTITY_TYPE_INFO: Record<string, EntityTypeInfo> = {
@@ -15,6 +21,7 @@ export const ENTITY_TYPE_INFO: Record<string, EntityTypeInfo> = {
       dark: "#990000",
       light: "#ff0000",
     },
+    editor: CounterEditor,
   },
   stat: {
     name: "Statistic",
@@ -23,6 +30,7 @@ export const ENTITY_TYPE_INFO: Record<string, EntityTypeInfo> = {
       dark: "#994400",
       light: "#ff8800",
     },
+    editor: StatEditor,
   },
   mod: {
     name: "Modifier",
@@ -31,6 +39,7 @@ export const ENTITY_TYPE_INFO: Record<string, EntityTypeInfo> = {
       dark: "#999900",
       light: "#ffff00",
     },
+    editor: ModEditor,
   },
   toggle: {
     name: "Toggle",
@@ -55,5 +64,6 @@ export const ENTITY_TYPE_INFO: Record<string, EntityTypeInfo> = {
       dark: "#000099",
       light: "#0000ff",
     },
+    editor: TraitEditor,
   },
 };

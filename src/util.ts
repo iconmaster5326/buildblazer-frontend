@@ -1,4 +1,3 @@
-import { NavigationProp, NavigationRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { NavigationProps } from "./app";
 

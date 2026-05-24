@@ -6,7 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import { Provider, useDispatch, useSelector } from "react-redux";
 
-import { BuildGeneric } from "@buildblazer/system-generic";
+import { BuildGeneric, Trait } from "@buildblazer/system-generic";
 
 import {
   BUILDBLAZER,
@@ -16,7 +16,16 @@ import {
   loadBuildList,
   saveBuild,
 } from "@/storage";
-import { Build, Entity, Milestone, Sheet } from "@buildblazer/core";
+import {
+  Build,
+  Counter,
+  Entity,
+  Milestone,
+  Modifier,
+  ModifierOp,
+  Sheet,
+  Statistic,
+} from "@buildblazer/core";
 
 const initState = {
   builds: [] as BuildSummary[],
@@ -116,6 +125,132 @@ const reducers = {
     }>,
   ) => {
     state.build.milestones[payload.milestone].changes.splice(payload.change, 1);
+  },
+  statBase: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Statistic
+      | undefined;
+    if (entity) entity.base = payload.value;
+  },
+  counterDefault: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Counter
+      | undefined;
+    if (entity) entity.defaultsTo = payload.value;
+  },
+  counterMin: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Counter
+      | undefined;
+    if (entity) entity.min = payload.value;
+  },
+  counterMax: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Counter
+      | undefined;
+    if (entity) entity.max = payload.value;
+  },
+  modStat: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Modifier
+      | undefined;
+    if (entity) entity.stat = payload.value;
+  },
+  modOp: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: ModifierOp;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Modifier
+      | undefined;
+    if (entity) entity.op = payload.value;
+  },
+  modValue: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Modifier
+      | undefined;
+    if (entity) entity.value = payload.value;
+  },
+  modCondition: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Modifier
+      | undefined;
+    if (entity) entity.condition = payload.value;
+  },
+  traitDesc: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entity: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entity) as
+      | Trait
+      | undefined;
+    if (entity) entity.description = payload.value;
   },
 };
 

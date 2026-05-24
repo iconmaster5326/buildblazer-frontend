@@ -1,6 +1,7 @@
 import { NavigationProps } from "@/app";
 import EntityChildList from "@/components/EntityChildList";
 import Screen from "@/components/Screen";
+import { ENTITY_TYPE_INFO } from "@/entityTypes";
 import { REDUX_DISPATCH, useReduxDispatch, useReduxSelector } from "@/redux";
 import { paramsUp } from "@/util";
 import { RouteProp, useNavigation } from "@react-navigation/native";
@@ -17,7 +18,7 @@ function EntityName({ entityID }: { entityID: string }) {
 
   return (
     <XStack gap="$4">
-      <Label htmlFor="name">
+      <Label width={150} htmlFor="name">
         <H5>Name</H5>
       </Label>
       <Input
@@ -44,7 +45,7 @@ function EntityVarName({ entityID }: { entityID: string }) {
 
   return (
     <XStack gap="$4">
-      <Label htmlFor="varname">
+      <Label width={150} htmlFor="varname">
         <H5>Variable Name</H5>
       </Label>
       <Input
@@ -71,6 +72,10 @@ export default function ScreenEditEntity({
 
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
   const milestoneIndex = paramsUp(nav, "Milestone").index;
+  const etype = useReduxSelector(
+    (state) =>
+      state.entity?.descendantOrSelf(route.params.entity)?.entityType() ?? "",
+  );
 
   useEffect(() => {
     const unsubscribe = nav.addListener("beforeRemove", async () => {
@@ -79,11 +84,14 @@ export default function ScreenEditEntity({
     });
   }, [nav, milestoneIndex, dipatch]);
 
+  const Editor = ENTITY_TYPE_INFO[etype]?.editor ?? (() => <></>);
+
   return (
     <Screen>
       <YStack flex={1} alignSelf="stretch" padding="$4" gap="$4">
         <EntityName entityID={route.params.entity} />
         <EntityVarName entityID={route.params.entity} />
+        <Editor entityID={route.params.entity} />
         <Separator />
         <EntityChildList entityID={route.params.entity} />
       </YStack>
