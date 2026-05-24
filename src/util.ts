@@ -1,3 +1,7 @@
+import { NavigationProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { NavigationProps } from "./app";
+
 export function uniqueName(names: string[], name: string): string {
   let numberNeeded = 0;
   for (let index = 0; index < names.length; index++) {
@@ -13,4 +17,12 @@ export function uniqueName(names: string[], name: string): string {
     name = `${name} ${numberNeeded}`;
   }
   return name;
+}
+
+export function paramsUp<T extends keyof NavigationProps>(
+  nav: NativeStackNavigationProp<NavigationProps>,
+  t: T,
+): NavigationProps[T] {
+  return nav.getState().routes.findLast((r) => r.name === t)
+    ?.params as NavigationProps[T];
 }

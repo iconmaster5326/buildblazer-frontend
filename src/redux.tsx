@@ -9,17 +9,19 @@ import { Provider, useDispatch, useSelector } from "react-redux";
 import { BuildGeneric } from "@buildblazer/system-generic";
 
 import {
+  BUILDBLAZER,
   BuildSummary,
   deleteBuild,
   loadBuild,
   loadBuildList,
   saveBuild,
 } from "@/storage";
-import { Build, Milestone, Sheet } from "@buildblazer/core";
+import { Build, Entity, Milestone, Sheet } from "@buildblazer/core";
 
 const initState = {
   builds: [] as BuildSummary[],
   build: undefined as any as Build,
+  entity: undefined as any as Entity,
 };
 export type ReduxState = typeof initState;
 
@@ -42,6 +44,65 @@ const reducers = {
     }>,
   ) => {
     state.build.milestones[index].name = value;
+  },
+  entity: (state: ReduxState, { payload }: PayloadAction<Entity>) => {
+    state.entity = payload;
+  },
+  addChild: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      parentID: string;
+      newEntity: Entity;
+    }>,
+  ) => {
+    state.entity
+      .descendantOrSelf(payload.parentID)
+      ?.children.push(payload.newEntity);
+  },
+  updateChangesFromEntity: (
+    state: ReduxState,
+    { payload }: PayloadAction<number>,
+  ) => {
+    const milestone = state.build.milestones[payload];
+    const before = state.build.entityBeforeMilestone(BUILDBLAZER, milestone);
+    milestone.changes = before.compare(state.entity);
+  },
+  entityName: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entityID: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entityID);
+    if (entity) entity.name = payload.value;
+  },
+  entityVarName: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      entityID: string;
+      value: string;
+    }>,
+  ) => {
+    const entity = state.entity.descendantOrSelf(payload.entityID);
+    if (entity) entity.varName = payload.value;
+  },
+  removeChange: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      milestone: number;
+      change: number;
+    }>,
+  ) => {
+    state.build.milestones[payload.milestone].changes.splice(payload.change, 1);
   },
 };
 
@@ -88,6 +149,7 @@ const selectors = {
   buildName: (state: ReduxState) => state.build.name,
   milestones: (state: ReduxState) => state.build.milestones,
   sheets: (state: ReduxState) => state.build.sheets,
+  entity: (state: ReduxState) => state.entity,
 };
 
 export const REDUX_SLICE = createSlice({

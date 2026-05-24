@@ -22,13 +22,14 @@ import ScreenNewBuild from "@/screens/newBuild";
 import ScreenOpenBuild from "@/screens/openBuild";
 import ScreenBuild from "@/screens/build";
 import ScreenMilestone from "@/screens/milestone";
-import ScreenPickEntityType from "@/screens/pickEntityType";
+import ScreenNewEntity from "@/screens/newEntity";
 import { REDUX_STORE, ReduxProvider } from "@/redux";
 import { saveBuild } from "@/storage";
 
 // set up Immer
 import * as bb from "@buildblazer/core";
 import * as sysGeneric from "@buildblazer/system-generic";
+import ScreenEditEntity from "@/screens/editEntity";
 
 for (const module of [bb, sysGeneric]) {
   for (const clazz of Object.values(module)) {
@@ -49,7 +50,12 @@ export type NavigationProps = {
   Milestone: {
     index: number;
   };
-  PickEntityType: undefined;
+  NewEntity: {
+    parent: string;
+  };
+  EditEntity: {
+    entity: string;
+  };
 };
 
 const header = () => <H3 padding="$4">Buildblazer</H3>;
@@ -97,12 +103,21 @@ const stack = createNativeStackNavigator<NavigationProps>({
         };
       },
     },
-    PickEntityType: {
-      screen: ScreenPickEntityType,
+    NewEntity: {
+      screen: ScreenNewEntity,
       options: {
         title: "New Trait",
         presentation: "transparentModal",
         headerShown: false,
+      },
+    },
+    EditEntity: {
+      screen: ScreenEditEntity,
+      options: ({ route }) => {
+        return {
+          title: `${REDUX_STORE.getState().build.name} / Edit ${REDUX_STORE.getState().entity.descendantOrSelf(route.params.entity)?.name ?? "Trait"}`,
+          headerRight: header,
+        };
       },
     },
   },

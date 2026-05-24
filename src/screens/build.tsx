@@ -12,14 +12,13 @@ import {
   styled,
   Tabs,
   useMedia,
-  useTheme,
   View,
   VisuallyHidden,
   XStack,
   YGroup,
   YStack,
 } from "tamagui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
@@ -33,10 +32,20 @@ import ReminderText from "@/components/ReminderText";
 import {
   REDUX_DISPATCH,
   REDUX_SELECTOR,
+  REDUX_STORE,
   useReduxDispatch,
   useReduxSelector,
 } from "@/redux";
 import { useDispatch } from "react-redux";
+import {
+  BBTab,
+  BBTabBar,
+  BBTabIcon,
+  BBTabs,
+  bbTabStyle,
+} from "@/components/BBTabs";
+import { saveBuild } from "@/storage";
+import { BBYGroup, BBYGroupSeparator } from "@/components/BBItemList";
 
 function InfoTab() {
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
@@ -63,16 +72,6 @@ function InfoTab() {
     </YStack>
   );
 }
-
-const BBYGroup = styled(YGroup, {
-  borderWidth: "$1",
-  borderRadius: "$2",
-  borderColor: "$borderColor",
-});
-const BBYGroupSeparator = styled(Separator, {
-  borderWidth: "$0.5",
-  borderColor: "$borderColor",
-});
 
 function MilestonesTab() {
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
@@ -254,24 +253,6 @@ export default function ScreenBuild({
   route: RouteProp<NavigationProps, "Build">;
 }) {
   const media = useMedia();
-  const theme = useTheme();
-  const BBTabIcon = styled(Icon, {
-    size: 20,
-    color: theme.color?.get(),
-  });
-
-  const tabStyle = {
-    activeStyle: {
-      backgroundColor: "$color3",
-      borderBottomWidth: 0,
-      fontWeight: "bold",
-    },
-    borderWidth: "$0.25",
-    borderColor: "$borderColor",
-    borderRadius: 0,
-    gap: "$1.5",
-  };
-  const BBTab = styled(Tabs.Tab, tabStyle);
 
   const BBTabLabel = styled(VisuallyHidden, {
     visible: media.xs,
@@ -286,6 +267,14 @@ export default function ScreenBuild({
       </XStack>
     );
   }
+
+  const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
+  useEffect(() => {
+    const unsubscribe = nav.addListener("beforeRemove", async () => {
+      await saveBuild(REDUX_STORE.getState().build);
+      unsubscribe();
+    });
+  }, [nav]);
 
   return (
     <Screen>
@@ -306,8 +295,8 @@ export default function ScreenBuild({
           </YStack>
         </XStack>
       ) : (
-        <Tabs alignSelf="stretch" flex={1} defaultValue="info">
-          <XStack
+        <BBTabs defaultValue="info">
+          <BBTabBar
             flexDirection="row"
             justifyContent="space-between"
             backgroundColor="$color1"
@@ -326,8 +315,8 @@ export default function ScreenBuild({
                 <BBTabLabel>Sheets</BBTabLabel>
               </BBTab>
             </Tabs.List>
-            <Button {...tabStyle} iconSize="$8" icon={<Icon name="menu" />} />
-          </XStack>
+            <Button {...bbTabStyle} iconSize="$8" icon={<Icon name="menu" />} />
+          </BBTabBar>
           <View padding="$4">
             <Tabs.Content value="info">
               <InfoTab />
@@ -339,7 +328,7 @@ export default function ScreenBuild({
               <SheetsTab />
             </Tabs.Content>
           </View>
-        </Tabs>
+        </BBTabs>
       )}
     </Screen>
   );
