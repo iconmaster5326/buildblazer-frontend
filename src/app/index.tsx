@@ -30,6 +30,8 @@ import { saveBuild } from "@/storage";
 import * as bb from "@buildblazer/core";
 import * as sysGeneric from "@buildblazer/system-generic";
 import ScreenEditEntity from "@/screens/editEntity";
+import { allParamsUp, paramsUp, paramsUpFromRoutes } from "@/util";
+import { ENTITY_TYPE_INFO } from "@/entityTypes";
 
 for (const module of [bb, sysGeneric]) {
   for (const clazz of Object.values(module)) {
@@ -113,9 +115,17 @@ const stack = createNativeStackNavigator<NavigationProps>({
     },
     EditEntity: {
       screen: ScreenEditEntity,
-      options: ({ route }) => {
+      options: (nav) => {
+        const state = REDUX_STORE.getState();
+        const milestoneIndex = paramsUp(nav.navigation, "Milestone").index;
+        const milestoneName = state.build.milestones[milestoneIndex].name;
+        const entityPathParts = allParamsUp(nav.navigation, "EditEntity")
+          .map((e) => state.entity.descendantOrSelf(e.entity))
+          .filter((e) => e && e.name)
+          .map((e) => e?.name)
+          .join(" / ");
         return {
-          title: `${REDUX_STORE.getState().build.name} / Edit ${REDUX_STORE.getState().entity.descendantOrSelf(route.params.entity)?.name ?? "Trait"}`,
+          title: `${state.build.name} / ${milestoneName} / ${entityPathParts}`,
           headerRight: header,
         };
       },

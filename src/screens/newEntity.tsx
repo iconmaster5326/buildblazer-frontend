@@ -43,7 +43,7 @@ export default function ScreenNewEntity({
                     newEntity: newEntity,
                   }),
                 );
-                nav.navigate("EditEntity", { entity: newEntity.id });
+                nav.push("EditEntity", { entity: newEntity.id });
               }}
             />
           </YGroup.Item>

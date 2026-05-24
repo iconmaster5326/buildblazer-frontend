@@ -1,4 +1,4 @@
-import { NavigationProp } from "@react-navigation/native";
+import { NavigationProp, NavigationRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { NavigationProps } from "./app";
 
@@ -25,4 +25,14 @@ export function paramsUp<T extends keyof NavigationProps>(
 ): NavigationProps[T] {
   return nav.getState().routes.findLast((r) => r.name === t)
     ?.params as NavigationProps[T];
+}
+
+export function allParamsUp<T extends keyof NavigationProps>(
+  nav: NativeStackNavigationProp<NavigationProps>,
+  t: T,
+): NavigationProps[T][] {
+  return nav
+    .getState()
+    .routes.filter((r) => r.name === t && r.params)
+    .map((r) => r?.params as NavigationProps[T]);
 }

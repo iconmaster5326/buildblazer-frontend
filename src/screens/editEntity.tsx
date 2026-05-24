@@ -1,11 +1,12 @@
 import { NavigationProps } from "@/app";
+import EntityChildList from "@/components/EntityChildList";
 import Screen from "@/components/Screen";
 import { REDUX_DISPATCH, useReduxDispatch, useReduxSelector } from "@/redux";
 import { paramsUp } from "@/util";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useEffect } from "react";
-import { H5, Input, Label, useMedia, XStack, YStack } from "tamagui";
+import { H5, Input, Label, Separator, XStack, YStack } from "tamagui";
 
 function EntityName({ entityID }: { entityID: string }) {
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
@@ -66,7 +67,6 @@ export default function ScreenEditEntity({
 }: {
   route: RouteProp<NavigationProps, "EditEntity">;
 }) {
-  const media = useMedia();
   const dipatch = useReduxDispatch();
 
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
@@ -81,9 +81,11 @@ export default function ScreenEditEntity({
 
   return (
     <Screen>
-      <YStack gap="$4">
+      <YStack flex={1} alignSelf="stretch" padding="$4" gap="$4">
         <EntityName entityID={route.params.entity} />
         <EntityVarName entityID={route.params.entity} />
+        <Separator />
+        <EntityChildList entityID={route.params.entity} />
       </YStack>
     </Screen>
   );

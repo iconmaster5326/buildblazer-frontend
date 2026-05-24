@@ -16,24 +16,32 @@ import {
 } from "tamagui";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
 import Screen from "@/components/Screen";
 import { NavigationProps } from "@/app";
 import ReminderText from "@/components/ReminderText";
 import PlusButton from "@/components/PlusButton";
 import {
   REDUX_DISPATCH,
+  REDUX_STORE,
   ReduxState,
   useReduxDispatch,
   useReduxSelector,
 } from "@/redux";
 import { createSelector } from "@reduxjs/toolkit";
-import { Build } from "@buildblazer/core";
+import {
+  Build,
+  Change,
+  ChangeAdd,
+  ChangeDel,
+  ChangeMove,
+  ChangeSet,
+  Entity,
+} from "@buildblazer/core";
 import { BUILDBLAZER } from "@/storage";
 import { BBTab, BBTabBar, BBTabIcon, BBTabs } from "@/components/BBTabs";
 import { BBYGroup, BBYGroupSeparator } from "@/components/BBItemList";
-import { useEffect, useState } from "react";
-import EntityTypeBadge from "@/components/EntityTypeBadge";
+import { useEffect } from "react";
+import EntityChildList from "@/components/EntityChildList";
 
 function MilestoneName({ index }: { index: number }) {
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
@@ -61,8 +69,6 @@ function MilestoneName({ index }: { index: number }) {
 }
 
 function TraitsTab({ index }: { index: number }) {
-  const media = useMedia();
-  const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
   const dispatch = useReduxDispatch();
 
   const id = useReduxSelector((state) => state.build.id);
@@ -78,50 +84,7 @@ function TraitsTab({ index }: { index: number }) {
     dispatch(REDUX_DISPATCH.entity(entity));
   }, [dispatch, entity]);
 
-  async function addTrait() {
-    nav.navigate("NewEntity", { parent: id });
-  }
-
-  return (
-    <YStack gap="$4">
-      {entity.children.length === 0 ? (
-        <ReminderText>
-          This character currently has no traits. Press &quot;
-          {media.md ? "Add Trait" : "+"}&quot; to add something!
-        </ReminderText>
-      ) : (
-        <BBYGroup>
-          {entity.children.map((child, index) => (
-            <>
-              {index === 0 ? null : <BBYGroupSeparator />}
-              <YGroup.Item key={index}>
-                <ListItem
-                  onPress={() => {
-                    nav.navigate("EditEntity", { entity: child.id });
-                  }}
-                >
-                  <XStack flex={1} alignItems="center" gap="$4">
-                    <Text width={70}>
-                      <EntityTypeBadge entityType={child.entityType()} />
-                    </Text>
-                    <Text flexGrow={1}>{child.name}</Text>
-                    <ListItem.Subtitle flexGrow={1}>
-                      {child.varName}
-                    </ListItem.Subtitle>
-                  </XStack>
-                </ListItem>
-              </YGroup.Item>
-            </>
-          ))}
-        </BBYGroup>
-      )}
-      {media.md ? (
-        <Button onPress={addTrait}>Add Trait</Button>
-      ) : (
-        <PlusButton onPress={addTrait} />
-      )}
-    </YStack>
-  );
+  return <EntityChildList entityID={id} />;
 }
 
 function ChangesTab({ index }: { index: number }) {
@@ -132,6 +95,45 @@ function ChangesTab({ index }: { index: number }) {
   );
 
   async function addChange() {}
+
+  function changeIcon(change: Change): any {
+    switch (change.changeType()) {
+      case "add":
+        return "plus";
+      case "del":
+        return "minus";
+      case "move":
+        return "cursor-move";
+      case "set":
+        return "equal";
+    }
+  }
+
+  function describeChange(change: Change): string {
+    const entity = REDUX_STORE.getState().entity as Entity | undefined;
+    const subjectName =
+      entity?.descendantOrSelf(change.subject)?.name ?? change.subject;
+    switch (change.changeType()) {
+      case "add":
+        const toAdd = (change as ChangeAdd).entity;
+        const addIndex = (change as ChangeAdd).index;
+        return `Add ${toAdd.type}${toAdd.name ? ` '${toAdd.name}'` : ""} to '${subjectName}'${addIndex === undefined ? "" : ` at index ${addIndex}`}`;
+      case "del":
+        const toDel =
+          entity?.descendantOrSelf((change as ChangeDel).entity)?.name ??
+          (change as ChangeDel).entity;
+        return `Delete '${toDel}' from '${subjectName}'`;
+      case "move":
+        const toMove =
+          entity?.descendantOrSelf((change as ChangeMove).entity)?.name ??
+          (change as ChangeMove).entity;
+        const moveIndex = (change as ChangeMove).index;
+        return `Move '${toMove}' from '${subjectName}' to index ${moveIndex}`;
+      case "set":
+        const value = JSON.stringify((change as ChangeSet).value);
+        return `Set property '${change.property}' on '${subjectName}' to ${value}`;
+    }
+  }
 
   return (
     <YStack gap="$4">
@@ -156,7 +158,10 @@ function ChangesTab({ index }: { index: number }) {
                     );
                   }}
                 >
-                  {JSON.stringify(change.toJSON())}
+                  <XStack gap="$4">
+                    <BBTabIcon name={changeIcon(change)} />
+                    <Text>{describeChange(change)}</Text>
+                  </XStack>
                 </ListItem>
               </YGroup.Item>
             </>
@@ -184,6 +189,15 @@ export default function ScreenMilestone({
   const index = route.params.index;
 
   const media = useMedia();
+  const dipatch = useReduxDispatch();
+  const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
+
+  useEffect(() => {
+    const unsubscribe = nav.addListener("beforeRemove", async () => {
+      dipatch(REDUX_DISPATCH.updateChangesFromEntity(index));
+      unsubscribe();
+    });
+  }, [nav, index, dipatch]);
 
   const BBTabLabel = styled(VisuallyHidden, {
     visible: media.xs,
