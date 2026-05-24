@@ -61,6 +61,19 @@ const reducers = {
       .descendantOrSelf(payload.parentID)
       ?.children.push(payload.newEntity);
   },
+  removeChild: (
+    state: ReduxState,
+    {
+      payload,
+    }: PayloadAction<{
+      parentID: string;
+      index: number;
+    }>,
+  ) => {
+    state.entity
+      .descendantOrSelf(payload.parentID)
+      ?.children.splice(payload.index, 1);
+  },
   updateChangesFromEntity: (
     state: ReduxState,
     { payload }: PayloadAction<number>,

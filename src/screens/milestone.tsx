@@ -1,10 +1,12 @@
 import {
   Button,
+  ContextMenu,
   H5,
   Input,
   Label,
   ListItem,
   Separator,
+  Strong,
   styled,
   Tabs,
   Text,
@@ -40,7 +42,7 @@ import {
 import { BUILDBLAZER } from "@/storage";
 import { BBTab, BBTabBar, BBTabIcon, BBTabs } from "@/components/BBTabs";
 import { BBYGroup, BBYGroupSeparator } from "@/components/BBItemList";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import EntityChildList from "@/components/EntityChildList";
 
 function MilestoneName({ index }: { index: number }) {
@@ -135,6 +137,8 @@ function ChangesTab({ index }: { index: number }) {
     }
   }
 
+  const [rClicked, setRClicked] = useState(undefined as number | undefined);
+
   return (
     <YStack gap="$4">
       {changes.length === 0 ? (
@@ -143,30 +147,48 @@ function ChangesTab({ index }: { index: number }) {
           {media.md ? "Add Change" : "+"}&quot; to add something!
         </ReminderText>
       ) : (
-        <BBYGroup>
-          {changes.map((change, changeIndex) => (
-            <>
-              {changeIndex === 0 ? null : <BBYGroupSeparator />}
-              <YGroup.Item key={changeIndex}>
-                <ListItem
-                  onPress={async () => {
-                    await dispatch(
-                      REDUX_DISPATCH.removeChange({
-                        milestone: index,
-                        change: changeIndex,
-                      }),
-                    );
-                  }}
+        <ContextMenu>
+          <BBYGroup>
+            {changes.map((change, changeIndex) => (
+              <>
+                {changeIndex === 0 ? null : <BBYGroupSeparator />}
+                <ContextMenu.Trigger
+                  asChild
+                  onContextMenu={() => setRClicked(changeIndex)}
                 >
-                  <XStack gap="$4">
-                    <BBTabIcon name={changeIcon(change)} />
-                    <Text>{describeChange(change)}</Text>
-                  </XStack>
-                </ListItem>
-              </YGroup.Item>
-            </>
-          ))}
-        </BBYGroup>
+                  <YGroup.Item key={changeIndex}>
+                    <ListItem>
+                      <XStack gap="$4">
+                        <BBTabIcon name={changeIcon(change)} />
+                        <Text>{describeChange(change)}</Text>
+                      </XStack>
+                    </ListItem>
+                  </YGroup.Item>
+                </ContextMenu.Trigger>
+              </>
+            ))}
+          </BBYGroup>
+          <ContextMenu.Portal>
+            <ContextMenu.Content>
+              <ContextMenu.Item
+                theme="red"
+                onPress={async () => {
+                  if (rClicked === undefined) return;
+                  await dispatch(
+                    REDUX_DISPATCH.removeChange({
+                      milestone: index,
+                      change: rClicked,
+                    }),
+                  );
+                }}
+              >
+                <ContextMenu.ItemTitle>
+                  <Strong>Delete</Strong>
+                </ContextMenu.ItemTitle>
+              </ContextMenu.Item>
+            </ContextMenu.Content>
+          </ContextMenu.Portal>
+        </ContextMenu>
       )}
       {media.md ? (
         <Button onPress={addChange}>Add Change</Button>
