@@ -31,6 +31,7 @@ const initState = {
   builds: [] as BuildSummary[],
   build: undefined as any as Build,
   entity: undefined as any as Entity,
+  previewSheet: undefined as any as Sheet,
 };
 export type ReduxState = typeof initState;
 

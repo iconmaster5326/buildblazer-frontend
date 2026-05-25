@@ -38,12 +38,14 @@ import {
   ChangeMove,
   ChangeSet,
   Entity,
+  Sheet,
 } from "@buildblazer/core";
 import { BUILDBLAZER } from "@/storage";
 import { BBTab, BBTabBar, BBTabIcon, BBTabs } from "@/components/BBTabs";
 import { BBYGroup, BBYGroupSeparator } from "@/components/BBItemList";
 import { useEffect, useState } from "react";
 import EntityChildList from "@/components/EntityChildList";
+import SheetView from "@/components/SheetView";
 
 function MilestoneName({ index }: { index: number }) {
   const nav = useNavigation<NativeStackNavigationProp<NavigationProps>>();
@@ -200,7 +202,17 @@ function ChangesTab({ index }: { index: number }) {
 }
 
 function PreviewTab({ index }: { index: number }) {
-  return <YStack gap="$4"></YStack>;
+  const sheet = useReduxSelector(
+    createSelector(
+      (state) => state.build.milestones[index],
+      (milestone) =>
+        new Sheet({
+          milestone: milestone.name,
+        }),
+    ),
+  );
+
+  return <SheetView sheet={sheet} />;
 }
 
 export default function ScreenMilestone({
